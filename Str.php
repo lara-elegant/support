@@ -2,8 +2,12 @@
 
 namespace Elegant\Support;
 
+use Elegant\Support\Traits\Macroable;
+
 class Str
 {
+    use Macroable;
+
     /**
      * The cache of snake-cased words.
      *
