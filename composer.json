@@ -15,6 +15,11 @@
     ],
     "require": {
         "php": "^7.3|^8.0",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-ctype": "*",
+        "doctrine/inflector": "^1.4|^2.0",
+        "lara-elegant/collections": "^1.0",
         "lara-elegant/contracts": "^1.0"
     },
     "conflict": {
