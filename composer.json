@@ -20,7 +20,8 @@
         "ext-ctype": "*",
         "doctrine/inflector": "^1.4|^2.0",
         "lara-elegant/collections": "^1.0",
-        "lara-elegant/contracts": "^1.0"
+        "lara-elegant/contracts": "^1.0",
+        "voku/portable-ascii": "^1.4.8"
     },
     "conflict": {
         "tightenco/collect": "<5.5.33"
