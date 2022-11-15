@@ -1,6 +1,6 @@
 <?php
 
-namespace App\libraries\Database;
+namespace Elegant\Support;
 
 use ArrayAccess;
 use Elegant\Contracts\Support\Arrayable;
