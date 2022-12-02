@@ -14,13 +14,15 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^7.4|^8.0",
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-ctype": "*",
         "doctrine/inflector": "^1.4|^2.0",
         "lara-elegant/collections": "^1.0",
+        "lara-elegant/conditionable": "^1.0",
         "lara-elegant/contracts": "^1.0",
+        "lara-elegant/macroable": "^1.0",
         "ramsey/uuid": "^4.0",
         "voku/portable-ascii": "^1.4.8"
     },
@@ -30,7 +32,10 @@
     "autoload": {
         "psr-4": {
             "Elegant\\Support\\": ""
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     },
     "extra": {
         "branch-alias": {
