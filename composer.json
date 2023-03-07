@@ -23,6 +23,7 @@
         "lara-elegant/conditionable": "^2.0",
         "lara-elegant/contracts": "^2.0",
         "lara-elegant/macroable": "^2.0",
+        "league/commonmark": "^2.0.2",
         "symfony/uid": "^6.0",
         "ramsey/uuid": "^4.7",
         "vlucas/phpdotenv": "^5.4.1",
@@ -45,6 +46,7 @@
         }
     },
     "suggest": {
+        "league/commonmark": "Required to use Str::markdown() and Stringable::markdown() (^2.0.2).",
         "ramsey/uuid": "Required to use Str::uuid() (^4.7).",
         "symfony/uid": "Required to use Str::ulid() (^6.0).",
         "vlucas/phpdotenv": "Required to use the Env class and env helper (^5.4.1)."
