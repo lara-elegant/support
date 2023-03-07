@@ -1,8 +1,11 @@
 <?php
 
-use Elegant\Support\Env;
+use Elegant\Contracts\Support\DeferringDisplayableValue;
+use Elegant\Contracts\Support\Htmlable;
 use Elegant\Support\Arr;
+use Elegant\Support\Env;
 use Elegant\Support\HigherOrderTapProxy;
+use Elegant\Support\Optional;
 use Elegant\Support\Str;
 
 if (! function_exists('append_config')) {
@@ -22,24 +25,6 @@ if (! function_exists('append_config')) {
 
                 $array[$start] = Arr::pull($array, $key);
             }
-        }
-
-        return $array;
-    }
-}
-
-if (!function_exists('array_except')) {
-    /**
-     * Get all of the given array except for a specified array of items.
-     *
-     * @param  array  $array
-     * @param  array|string  $keys
-     * @return array
-     */
-    function array_except($array, $keys)
-    {
-        foreach ((array) $keys as $key) {
-            unset($array[$key]);
         }
 
         return $array;
@@ -113,16 +98,29 @@ if (! function_exists('class_uses_recursive')) {
     }
 }
 
-if (!function_exists('e')) {
+if (! function_exists('e')) {
     /**
-     * Escape HTML entities in a string.
+     * Encode HTML special characters in a string.
      *
-     * @param  string  $value
+     * @param  \Elegant\Contracts\Support\DeferringDisplayableValue|\Elegant\Contracts\Support\Htmlable|\BackedEnum|string|null  $value
+     * @param  bool  $doubleEncode
      * @return string
      */
-    function e($value)
+    function e($value, $doubleEncode = true)
     {
-        return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
+        if ($value instanceof DeferringDisplayableValue) {
+            $value = $value->resolveDisplayableValue();
+        }
+
+        if ($value instanceof Htmlable) {
+            return $value->toHtml();
+        }
+
+        if ($value instanceof BackedEnum) {
+            $value = $value->value;
+        }
+
+        return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8', $doubleEncode);
     }
 }
 
@@ -177,6 +175,24 @@ if (! function_exists('object_get')) {
         }
 
         return $object;
+    }
+}
+
+if (! function_exists('optional')) {
+    /**
+     * Provide access to optional objects.
+     *
+     * @param  mixed  $value
+     * @param  callable|null  $callback
+     * @return mixed
+     */
+    function optional($value = null, callable $callback = null)
+    {
+        if (is_null($callback)) {
+            return new Optional($value);
+        } elseif (! is_null($value)) {
+            return $callback($value);
+        }
     }
 }
 
@@ -396,10 +412,11 @@ if (! function_exists('with')) {
      * Return the given value, optionally passed through the given callback.
      *
      * @template TValue
+     * @template TReturn
      *
      * @param  TValue  $value
-     * @param  (callable(TValue): TValue)|null  $callback
-     * @return TValue
+     * @param  (callable(TValue): (TReturn))|null  $callback
+     * @return ($callback is null ? TValue : TReturn)
      */
     function with($value, callable $callback = null)
     {

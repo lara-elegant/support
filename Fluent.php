@@ -12,14 +12,14 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * All of the attributes set on the fluent instance.
      *
-     * @var array
+     * @var array<TKey, TValue>
      */
-    public $attributes = [];
+    protected $attributes = [];
 
     /**
      * Create a new fluent instance.
      *
-     * @param  array|object  $attributes
+     * @param  iterable<TKey, TValue>  $attributes
      * @return void
      */
     public function __construct($attributes = [])
@@ -32,9 +32,11 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Get an attribute from the fluent instance.
      *
-     * @param  string  $key
-     * @param  mixed  $default
-     * @return mixed
+     * @template TGetDefault
+     *
+     * @param  TKey  $key
+     * @param  TGetDefault|(\Closure(): TGetDefault)  $default
+     * @return TValue|TGetDefault
      */
     public function get($key, $default = null)
     {
@@ -48,7 +50,7 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Get the attributes from the fluent instance.
      *
-     * @return array
+     * @return array<TKey, TValue>
      */
     public function getAttributes()
     {
@@ -58,7 +60,7 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Convert the fluent instance to an array.
      *
-     * @return array
+     * @return array<TKey, TValue>
      */
     public function toArray()
     {
@@ -68,9 +70,9 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Convert the object into something JSON serializable.
      *
-     * @return array
+     * @return array<TKey, TValue>
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->toArray();
     }
@@ -89,10 +91,10 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Determine if the given offset exists.
      *
-     * @param  string  $offset
+     * @param  TKey  $offset
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->attributes[$offset]);
     }
@@ -100,10 +102,10 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Get the value for a given offset.
      *
-     * @param  string  $offset
-     * @return mixed
+     * @param  TKey  $offset
+     * @return TValue|null
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->get($offset);
     }
@@ -111,11 +113,11 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Set the value at the given offset.
      *
-     * @param  string  $offset
-     * @param  mixed  $value
+     * @param  TKey  $offset
+     * @param  TValue  $value
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->attributes[$offset] = $value;
     }
@@ -123,10 +125,10 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Unset the value at the given offset.
      *
-     * @param  string  $offset
+     * @param  TKey  $offset
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->attributes[$offset]);
     }
@@ -134,13 +136,13 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Handle dynamic calls to the fluent instance to set attributes.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param  TKey  $method
+     * @param  array{0: ?TValue}  $parameters
      * @return $this
      */
     public function __call($method, $parameters)
     {
-        $this->attributes[$method] = count($parameters) > 0 ? $parameters[0] : true;
+        $this->attributes[$method] = count($parameters) > 0 ? reset($parameters) : true;
 
         return $this;
     }
@@ -148,8 +150,8 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Dynamically retrieve the value of an attribute.
      *
-     * @param  string  $key
-     * @return mixed
+     * @param  TKey  $key
+     * @return TValue|null
      */
     public function __get($key)
     {
@@ -159,8 +161,8 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Dynamically set the value of an attribute.
      *
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param  TKey  $key
+     * @param  TValue  $value
      * @return void
      */
     public function __set($key, $value)
@@ -171,7 +173,7 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Dynamically check if an attribute is set.
      *
-     * @param  string  $key
+     * @param  TKey  $key
      * @return bool
      */
     public function __isset($key)
@@ -182,7 +184,7 @@ class Fluent implements Arrayable, ArrayAccess, Jsonable, JsonSerializable
     /**
      * Dynamically unset an attribute.
      *
-     * @param  string  $key
+     * @param  TKey  $key
      * @return void
      */
     public function __unset($key)

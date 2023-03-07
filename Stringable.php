@@ -55,7 +55,7 @@ class Stringable implements JsonSerializable
     /**
      * Append the given values to the string.
      *
-     * @param  array  $values
+     * @param  string  ...$values
      * @return static
      */
     public function append(...$values)
@@ -165,23 +165,25 @@ class Stringable implements JsonSerializable
     /**
      * Determine if a given string contains a given substring.
      *
-     * @param  string|string[]  $needles
+     * @param  string|iterable<string>  $needles
+     * @param  bool  $ignoreCase
      * @return bool
      */
-    public function contains($needles)
+    public function contains($needles, $ignoreCase = false)
     {
-        return Str::contains($this->value, $needles);
+        return Str::contains($this->value, $needles, $ignoreCase);
     }
 
     /**
      * Determine if a given string contains all array values.
      *
-     * @param  array  $needles
+     * @param  iterable<string>  $needles
+     * @param  bool  $ignoreCase
      * @return bool
      */
-    public function containsAll(array $needles)
+    public function containsAll($needles, $ignoreCase = false)
     {
-        return Str::containsAll($this->value, $needles);
+        return Str::containsAll($this->value, $needles, $ignoreCase);
     }
 
     /**
@@ -198,7 +200,7 @@ class Stringable implements JsonSerializable
     /**
      * Determine if a given string ends with a given substring.
      *
-     * @param  string|string[]  $needles
+     * @param  string|iterable<string>  $needles
      * @return bool
      */
     public function endsWith($needles)
@@ -278,7 +280,7 @@ class Stringable implements JsonSerializable
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param  string|array  $pattern
+     * @param  string|iterable<string>  $pattern
      * @return bool
      */
     public function is($pattern)
@@ -297,6 +299,16 @@ class Stringable implements JsonSerializable
     }
 
     /**
+     * Determine if a given string is valid JSON.
+     *
+     * @return bool
+     */
+    public function isJson()
+    {
+        return Str::isJson($this->value);
+    }
+
+    /**
      * Determine if a given string is a valid UUID.
      *
      * @return bool
@@ -304,6 +316,16 @@ class Stringable implements JsonSerializable
     public function isUuid()
     {
         return Str::isUuid($this->value);
+    }
+
+    /**
+     * Determine if a given string is a valid ULID.
+     *
+     * @return bool
+     */
+    public function isUlid()
+    {
+        return Str::isUlid($this->value);
     }
 
     /**
@@ -339,7 +361,7 @@ class Stringable implements JsonSerializable
     /**
      * Return the length of the given string.
      *
-     * @param  string  $encoding
+     * @param  string|null  $encoding
      * @return int
      */
     public function length($encoding = null)
@@ -367,6 +389,28 @@ class Stringable implements JsonSerializable
     public function lower()
     {
         return new static(Str::lower($this->value));
+    }
+
+    /**
+     * Convert GitHub flavored Markdown into HTML.
+     *
+     * @param  array  $options
+     * @return static
+     */
+    public function markdown(array $options = [])
+    {
+        return new static(Str::markdown($this->value, $options));
+    }
+
+    /**
+     * Convert inline Markdown into HTML.
+     *
+     * @param  array  $options
+     * @return static
+     */
+    public function inlineMarkdown(array $options = [])
+    {
+        return new static(Str::inlineMarkdown($this->value, $options));
     }
 
     /**
@@ -456,7 +500,7 @@ class Stringable implements JsonSerializable
      * Parse a Class@method style callback into class and method.
      *
      * @param  string|null  $default
-     * @return array
+     * @return array<int, string|null>
      */
     public function parseCallback($default = null)
     {
@@ -477,7 +521,7 @@ class Stringable implements JsonSerializable
     /**
      * Get the plural form of an English word.
      *
-     * @param  int  $count
+     * @param  int|array|\Countable  $count
      * @return static
      */
     public function plural($count = 2)
@@ -488,7 +532,7 @@ class Stringable implements JsonSerializable
     /**
      * Pluralize the last word of an English, studly caps case string.
      *
-     * @param  int  $count
+     * @param  int|array|\Countable  $count
      * @return static
      */
     public function pluralStudly($count = 2)
@@ -499,7 +543,7 @@ class Stringable implements JsonSerializable
     /**
      * Prepend the given values to the string.
      *
-     * @param  array  $values
+     * @param  string  ...$values
      * @return static
      */
     public function prepend(...$values)
@@ -510,7 +554,7 @@ class Stringable implements JsonSerializable
     /**
      * Remove any occurrence of the given string in the subject.
      *
-     * @param  string|array<string>  $search
+     * @param  string|iterable<string>  $search
      * @param  bool  $caseSensitive
      * @return static
      */
@@ -543,23 +587,23 @@ class Stringable implements JsonSerializable
     /**
      * Replace the given value in the given string.
      *
-     * @param  string|string[]  $search
-     * @param  string|string[]  $replace
+     * @param  string|iterable<string>  $search
+     * @param  string|iterable<string>  $replace
      * @return static
      */
     public function replace($search, $replace)
     {
-        return new static(str_replace($search, $replace, $this->value));
+        return new static(Str::replace($search, $replace, $this->value));
     }
 
     /**
      * Replace a given value in the string sequentially with an array.
      *
      * @param  string  $search
-     * @param  array  $replace
+     * @param  iterable<string>  $replace
      * @return static
      */
-    public function replaceArray($search, array $replace)
+    public function replaceArray($search, $replace)
     {
         return new static(Str::replaceArray($search, $replace, $this->value));
     }
@@ -693,11 +737,12 @@ class Stringable implements JsonSerializable
      *
      * @param  string  $separator
      * @param  string|null  $language
+     * @param  array<string, string>  $dictionary
      * @return static
      */
-    public function slug($separator = '-', $language = 'en')
+    public function slug($separator = '-', $language = 'en', $dictionary = ['@' => 'at'])
     {
-        return new static(Str::slug($this->value, $separator, $language));
+        return new static(Str::slug($this->value, $separator, $language, $dictionary));
     }
 
     /**
@@ -714,7 +759,7 @@ class Stringable implements JsonSerializable
     /**
      * Determine if a given string starts with a given substring.
      *
-     * @param  string|string[]  $needles
+     * @param  string|iterable<string>  $needles
      * @return bool
      */
     public function startsWith($needles)
@@ -737,32 +782,33 @@ class Stringable implements JsonSerializable
      *
      * @param  int  $start
      * @param  int|null  $length
+     * @param  string  $encoding
      * @return static
      */
-    public function substr($start, $length = null)
+    public function substr($start, $length = null, $encoding = 'UTF-8')
     {
-        return new static(Str::substr($this->value, $start, $length));
+        return new static(Str::substr($this->value, $start, $length, $encoding));
     }
 
     /**
      * Returns the number of substring occurrences.
      *
      * @param  string  $needle
-     * @param  int|null  $offset
+     * @param  int  $offset
      * @param  int|null  $length
      * @return int
      */
-    public function substrCount($needle, $offset = null, $length = null)
+    public function substrCount($needle, $offset = 0, $length = null)
     {
-        return Str::substrCount($this->value, $needle, $offset ?? 0, $length);
+        return Str::substrCount($this->value, $needle, $offset, $length);
     }
 
     /**
      * Replace text within a portion of a string.
      *
-     * @param  string|array  $replace
-     * @param  array|int  $offset
-     * @param  array|int|null  $length
+     * @param  string|string[]  $replace
+     * @param  int|int[]  $offset
+     * @param  int|int[]|null  $length
      * @return static
      */
     public function substrReplace($replace, $offset = 0, $length = null)
@@ -847,7 +893,7 @@ class Stringable implements JsonSerializable
     /**
      * Execute the given callback if the string contains a given substring.
      *
-     * @param  string|string[]  $needles
+     * @param  string|iterable<string>  $needles
      * @param  callable  $callback
      * @param  callable|null  $default
      * @return static
@@ -860,7 +906,7 @@ class Stringable implements JsonSerializable
     /**
      * Execute the given callback if the string contains all array values.
      *
-     * @param  array  $needles
+     * @param  iterable<string>  $needles
      * @param  callable  $callback
      * @param  callable|null  $default
      * @return static
@@ -897,7 +943,7 @@ class Stringable implements JsonSerializable
     /**
      * Execute the given callback if the string ends with a given substring.
      *
-     * @param  string|string[]  $needles
+     * @param  string|iterable<string>  $needles
      * @param  callable  $callback
      * @param  callable|null  $default
      * @return static
@@ -921,9 +967,22 @@ class Stringable implements JsonSerializable
     }
 
     /**
+     * Execute the given callback if the string is not an exact match with the given value.
+     *
+     * @param  string  $value
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return static
+     */
+    public function whenNotExactly($value, $callback, $default = null)
+    {
+        return $this->when(! $this->exactly($value), $callback, $default);
+    }
+
+    /**
      * Execute the given callback if the string matches a given pattern.
      *
-     * @param  string|array  $pattern
+     * @param  string|iterable<string>  $pattern
      * @param  callable  $callback
      * @param  callable|null  $default
      * @return static
@@ -958,9 +1017,21 @@ class Stringable implements JsonSerializable
     }
 
     /**
+     * Execute the given callback if the string is a valid ULID.
+     *
+     * @param  callable  $callback
+     * @param  callable|null  $default
+     * @return static
+     */
+    public function whenIsUlid($callback, $default = null)
+    {
+        return $this->when($this->isUlid(), $callback, $default);
+    }
+
+    /**
      * Execute the given callback if the string starts with a given substring.
      *
-     * @param  string|string[]  $needles
+     * @param  string|iterable<string>  $needles
      * @param  callable  $callback
      * @param  callable|null  $default
      * @return static
@@ -998,11 +1069,12 @@ class Stringable implements JsonSerializable
     /**
      * Get the number of words a string contains.
      *
+     * @param  string|null  $characters
      * @return int
      */
-    public function wordCount()
+    public function wordCount($characters = null)
     {
-        return str_word_count($this->value);
+        return Str::wordCount($this->value, $characters);
     }
 
     /**
@@ -1014,7 +1086,7 @@ class Stringable implements JsonSerializable
      */
     public function wrap($before, $after = null)
     {
-        return new static($before.$this->value.($after ??= $before));
+        return new static(Str::wrap($this->value, $before, $after));
     }
 
     /**
@@ -1069,6 +1141,38 @@ class Stringable implements JsonSerializable
     public function toString()
     {
         return $this->value;
+    }
+
+    /**
+     * Get the underlying string value as an integer.
+     *
+     * @return int
+     */
+    public function toInteger()
+    {
+        return intval($this->value);
+    }
+
+    /**
+     * Get the underlying string value as a float.
+     *
+     * @return float
+     */
+    public function toFloat()
+    {
+        return floatval($this->value);
+    }
+
+    /**
+     * Get the underlying string value as a boolean.
+     *
+     * Returns true when value is "1", "true", "on", and "yes". Otherwise, returns false.
+     *
+     * @return bool
+     */
+    public function toBoolean()
+    {
+        return filter_var($this->value, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
